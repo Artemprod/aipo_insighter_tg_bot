@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+
+  redis_admin:
+    image: redis
+    ports:
+      - "7084:7084"
+    restart: always
+    networks:
+      - stage_network
+    volumes:
+      - redis_admin_volume:/DB/Redis/admin/data/db
+    command: [ "redis-server", "--port", "7084" ]
+
+
+  insight_telegram_admin:
+    image: docker.io/artemprod/insighter_bot_admin:${IMAGE_TAG:-latest} # удобно чтобы посомтреть чтобы соответсвовать коммиту
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - stage_network
+    depends_on:
+      - redis_admin
+
+
+
+volumes:
+  redis_admin_volume:
+
+networks:
+  stage_network:
+    external: true

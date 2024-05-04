@@ -32,7 +32,7 @@ async def get_transcribed_text(text_id):
     url = f"{host}{api}"
     async with aiohttp.ClientSession() as session:
         res = await do_get_request(session=session, url=url, params={'id_text': text_id})
-    return res
+    return res['text']
 
 
 async def get_summary_text(text_id):

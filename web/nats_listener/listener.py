@@ -42,8 +42,18 @@ def listen(server, queue):
     return decorator
 
 
-@listen(server="nats://demo.nats.io:4222", queue="foo")
-async def received_result(msg: Msg):
+@listen(server="nats://demo.nats.io:4222", queue="transcribe")
+async def received_transcribed_id(msg: Msg):
+    print(f"Received result: {msg.data.decode()}")
+    a = IncomeTranscribedText.parse_raw(msg.data)
+    # if int(a.id_text)>0:
+    #     #answer[id_text) = 'SELECT TEXT WHERE id = id_text'
+    #     #send message answer[id_text)
+    # Отправить сообщение с тем что переволд закончени и фильтр на хэгдлер что перевод закончкен ( не запустаться при нескольких запросах )
+    return int(a.id_text)
+
+@listen(server="nats://demo.nats.io:4222", queue="summary")
+async def received_summary_id(msg: Msg):
     print(f"Received result: {msg.data.decode()}")
     a = IncomeTranscribedText.parse_raw(msg.data)
     # if int(a.id_text)>0:
@@ -54,4 +64,4 @@ async def received_result(msg: Msg):
 
 
 if __name__ == '__main__':
-    asyncio.run(received_result())
+    asyncio.run(received_transcribed_id())

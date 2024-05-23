@@ -1,6 +1,9 @@
 import asyncio
+import json
+
 import nats
 from nats.aio.msg import Msg
+from pydantic import ValidationError
 
 from domain.enteties.message_enteties import IncomeTranscribedText
 
@@ -21,16 +24,22 @@ def listen(server, queue):
         async def wrapper(*args, **kwargs):
             nc = await nats.connect(server)
 
-            future = asyncio.Future()  # Создаём объект Future для контроля завершения
-
             async def cb(msg):
+                nonlocal future
                 try:
+                    # Проверяем, завершен ли текущий future перед использованием
+                    if future.done():
+                        future = asyncio.Future()  # Создаем новый future, если текущий завершен
+
                     # Вызываем декорируемую функцию с полученным сообщением
                     result = await func(msg, *args, **kwargs)
-                    future.set_result(result)  # Устанавливаем результат для Future
+                    if not future.done():
+                        future.set_result(result)  # Устанавливаем результат для Future
                 except Exception as e:
-                    future.set_exception(e)  # Устанавливаем исключение, если что-то пошло не так
+                    if not future.done():
+                        future.set_exception(e)  # Устанавливаем исключение, если что-то пошло не так
 
+            future = asyncio.Future()  # Создаем объект Future для контроля завершения
             await nc.subscribe(queue, cb=cb)
             await nc.flush()
             print("Listening for results...")
@@ -42,17 +51,32 @@ def listen(server, queue):
     return decorator
 
 
-@listen(server="nats://demo.nats.io:4222", queue="transcribe")
+@listen(server="nats://demo.nats.io:4222", queue="telegram.wait")
 async def received_transcribed_id(msg: Msg):
-    print(f"Received result: {msg.data.decode()}")
-    a = IncomeTranscribedText.parse_raw(msg.data)
-    # if int(a.id_text)>0:
-    #     #answer[id_text) = 'SELECT TEXT WHERE id = id_text'
-    #     #send message answer[id_text)
-    # Отправить сообщение с тем что переволд закончени и фильтр на хэгдлер что перевод закончкен ( не запустаться при нескольких запросах )
-    return int(a.id_text)
+    try:
+        # Преобразуем входную строку JSON с одинарными кавычками в правильный формат с двойными кавычками
+        raw_data = msg.data.decode()
+        print(f"Received raw data: {raw_data}")
 
-@listen(server="nats://demo.nats.io:4222", queue="summary")
+        # Попробуем обработать данные как правильный JSON
+        try:
+            data = json.loads(raw_data)
+        except json.JSONDecodeError:
+            # Если ошибка, заменим одинарные кавычки на двойные и попробуем снова
+            corrected_data = raw_data.replace("'", '"')
+            data = json.loads(corrected_data)
+
+        a = IncomeTranscribedText(**data)
+        print(f"Parsed data: {a}")
+        print(a.tex_id)
+        return int(a.tex_id)
+    except ValidationError as e:
+        print(f"Validation error: {e}")
+        return None
+
+
+
+@listen(server="nats://demo.nats.io:4222", queue="telegram.wait")
 async def received_summary_id(msg: Msg):
     print(f"Received result: {msg.data.decode()}")
     a = IncomeTranscribedText.parse_raw(msg.data)

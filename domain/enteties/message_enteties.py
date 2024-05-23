@@ -2,9 +2,9 @@ from pydantic import BaseModel
 
 
 class IncomeTranscribedText(BaseModel):
-    id_text: str | int
-    addressee: str | None = None
-    description: str | None = None
+    tex_id: str | int
+    user_id: str | int
+
 
 
 class TranscribedTextId(BaseModel):

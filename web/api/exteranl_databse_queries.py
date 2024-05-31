@@ -3,8 +3,6 @@ import asyncio
 import aiohttp
 from aiohttp import ClientSession
 
-from bot.models.request_result import ResponseText
-
 
 async def do_get_request(session: ClientSession, url: str, params):
     async with session.get(url, params=params) as response:
@@ -19,6 +17,15 @@ async def do_post_request(session: ClientSession, url: str, payload: dict):
 
 async def do_youtube_transcribition(object_yo_send):
     api = "start/start_process_from_youtube"
+    host = 'http://127.0.0.1:9192/'
+    url = f"{host}{api}"
+    async with aiohttp.ClientSession() as session:
+        res = await do_post_request(session=session, url=url, payload=object_yo_send.dict())
+    return res
+
+
+async def do_storage_transcribition(object_yo_send):
+    api = "start/start_process_from_storage"
     host = 'http://127.0.0.1:9192/'
     url = f"{host}{api}"
     async with aiohttp.ClientSession() as session:
@@ -45,7 +52,6 @@ async def get_summary_text(text_id):
         res = await do_get_request(session=session, url=url, params=params)
         print(res)
         return res['summary_text']
-
 
 
 if __name__ == '__main__':

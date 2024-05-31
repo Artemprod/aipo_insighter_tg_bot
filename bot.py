@@ -1,24 +1,28 @@
 # _____ADMIN BOT
 import asyncio
-import os.path
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
-from aiogram.fsm.storage.redis import Redis, RedisStorage
+from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.client.telegram import TelegramAPIServer
 
+from bot.config.bot_configs import load_bot_config
 from bot.handlers import command_handler, user_handler
 from bot.keyboards.main_menu import set_main_menu
 
+config = load_bot_config('.env')
+
 
 async def main() -> None:
-    # config = config_data
+    session = AiohttpSession(api=TelegramAPIServer.from_base(
+        config.AdminBot.telegram_server_url
+    ))
 
-    # redis = Redis(host=config.redis_storage.admin_bot_docker_host,
-    #               port=config.redis_storage.admin_bot_docker_port)
-    # storage: RedisStorage = RedisStorage(redis=redis)
-
-    bot: Bot = Bot(token="6145823156:AAElAEKBthci1mgd4mk1GX7VbDqMYUnbqEA",
-                   default=DefaultBotProperties(parse_mode="HTML"))
+    bot: Bot = Bot(
+        token=config.AdminBot.tg_bot_token,
+        default=DefaultBotProperties(parse_mode="HTML"),
+        # session=session
+    )
 
     # Добовляем хэгдлеры в диспечтер через роутеры
     dp: Dispatcher = Dispatcher()

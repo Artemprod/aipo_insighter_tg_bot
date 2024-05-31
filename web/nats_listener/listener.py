@@ -8,17 +8,6 @@ from pydantic import ValidationError
 from domain.enteties.message_enteties import IncomeTranscribedText
 
 
-# def listen(server, queue):
-#     def decorator(func):
-#         async def wrapper(*args, **kwargs):
-#             nc = await nats.connect(server)
-#             await nc.subscribe(queue, cb=func)
-#             await nc.flush()
-#             print("Listening for results...")
-#             await asyncio.Future()  # Бесконечное ожидание, пока не будет отменено
-#         return wrapper
-#
-#     return decorator
 def listen(server, queue):
     def decorator(func):
         async def wrapper(*args, **kwargs):
@@ -73,7 +62,6 @@ async def received_transcribed_id(msg: Msg):
     except ValidationError as e:
         print(f"Validation error: {e}")
         return None
-
 
 
 @listen(server="nats://demo.nats.io:4222", queue="telegram.wait")

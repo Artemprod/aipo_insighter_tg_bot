@@ -1,4 +1,4 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
@@ -11,3 +11,4 @@ router = Router()
 async def process_start_command(message: Message):
     # option_keyboard = crete_inline_keyboard_options()
     await message.answer(text='Закинь ютуб ссылку')
+

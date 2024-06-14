@@ -16,7 +16,7 @@ python-dotenv = "^1.0.1"
 aiobotocore = "^2.13.0"
 requests = "^2.32.2"
 types-aiobotocore = {extras = ["aiobotocore"], version = "^2.13.0"}
-aioselectel-api = "^0.1.4"
+environs = "^11.0.0"
 
 
 [build-system]

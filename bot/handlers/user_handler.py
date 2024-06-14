@@ -1,4 +1,3 @@
-import tempfile
 from datetime import datetime
 
 from aiogram import F, Router, Bot
@@ -72,36 +71,40 @@ async def document_handler(message: Message, bot: Bot):
     document_data = message.document
 
     file_url = await get_file_url(document_data.file_id)
+    print(file_url)
 
     # Скачиваем файл с телеграм сервера
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        import os
-        temp_file_path = os.path.normpath(
-            os.path.join(str(tmpdirname), str(datetime.now().timestamp()))
-        )
-        print(temp_file_path)
+    await bot.download_file(file_path=file_url, destination='C:\\Users\\DESKTOP-HOME\\Downloads')
+    # with tempfile.TemporaryDirectory() as tmpdirname:
+    #     import os
+    #     temp_file_path = os.path.normpath(
+    #         os.path.join(str(tmpdirname), str(datetime.now().timestamp()))
+    #     )
+    # print(temp_file_path)
 
-        await bot.download_file(file_url, temp_file_path)
+    # await bot.download_file(file_url, temp_file_path)
 
-        s3_client = S3Client(
-            access_key=config.s3_config.access_key,
-            secret_key=config.s3_config.secret_key,
-            endpoint_url="https://s3.storage.selcloud.ru",
-            bucket_name="private-insighter-1",
-        )
-        # Загружаем файл в S3
-        await s3_client.upload_file(temp_file_path)
+    s3_client = S3Client(
+        access_key=config.s3_config.access_key,
+        secret_key=config.s3_config.secret_key,
+        endpoint_url="https://s3.storage.selcloud.ru",
+        bucket_name="private-insighter-1",
+    )
+    # Загружаем файл в S3
+    # print(temp_file_path)
+    # await s3_client.upload_file(temp_file_path)
 
-        # Получаем название объекта
-        object_name = document_data.file_name
+    # Получаем название объекта
+    object_name = document_data.file_name
 
-        # Генерируем временную ссылку для загруженного файла
-        presigned_url = await s3_client.generate_presigned_url_func(object_name)
+    print(object_name)
+    # Генерируем временную ссылку для загруженного файла
+    presigned_url = None  # await s3_client.generate_presigned_url(object_name)
 
-        # Удаляем временный файл
+    # Удаляем временный файл
 
-        # Отправляем пользователю ссылку
-        await message.answer(f"File uploaded successfully. Here is the link: {presigned_url}")
+    # Отправляем пользователю ссылку
+    await message.answer(f"File uploaded successfully. Here is the link: {presigned_url}")
     # download
     # upload 3 : return ссылка которая действительна 10 мин
     # await do_storage_transcribition(StartFromS3Message(

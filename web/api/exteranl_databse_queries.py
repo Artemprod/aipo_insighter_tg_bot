@@ -24,13 +24,14 @@ async def do_youtube_transcribition(object_yo_send):
     return res
 
 
-async def do_storage_transcribition(object_yo_send):
-    api = "start/start_process_from_storage"
+async def do_s3_transcribtion(object_yo_send):
+    api = "start/start_process_from_s3"
     host = 'http://127.0.0.1:9192/'
     url = f"{host}{api}"
     async with aiohttp.ClientSession() as session:
         res = await do_post_request(session=session, url=url, payload=object_yo_send.dict())
     return res
+
 
 
 async def get_transcribed_text(text_id):
